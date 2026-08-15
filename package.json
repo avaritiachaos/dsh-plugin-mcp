@@ -10,6 +10,13 @@
     "README.md",
     "LICENSE"
   ],
+  "dsh": {
+    "displayName": "MCP Protocol Bridge",
+    "description": "Connects Anthropic Model Context Protocol (MCP) servers to DeepSeek agent tools",
+    "icon": "plug",
+    "service": "mcp",
+    "category": "tools"
+  },
   "scripts": {
     "build": "tsc",
     "test": "node --test test/mcp.test.mjs"
@@ -18,9 +25,9 @@
     "deepseek",
     "deepseek-harness",
     "dsh",
+    "dsh-plugin",
     "cordis",
     "mcp",
-    "model-context-protocol",
     "tools"
   ],
   "author": "Shion Lab",
@@ -33,6 +40,7 @@
     "access": "public"
   },
   "peerDependencies": {
+    "@deepseek-ai/dsh": "*",
     "cordis": "^3.0.0"
   },
   "devDependencies": {
