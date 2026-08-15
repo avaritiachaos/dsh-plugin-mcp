@@ -26,12 +26,13 @@ declare module 'cordis' {
  * DeepSeek Harness Model Context Protocol (MCP) Service.
  * Connects external MCP servers and bridges them into DeepSeek agent tool space.
  */
-export class MCPService extends Service {
+export class MCPService extends Service<MCPPluginConfig> {
   private clients = new Map<string, MCPStdioClient>()
   private registeredTools = new Map<string, { server: string; definition: MCPToolDefinition }>()
 
-  constructor(ctx: Context, private config: MCPPluginConfig = {}) {
+  constructor(ctx: Context, config: MCPPluginConfig = {}) {
     super(ctx, 'mcp', true)
+    this.config = config
   }
 
   protected async start(): Promise<void> {
