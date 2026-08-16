@@ -1,6 +1,6 @@
 {
   "name": "@shion-lab/dsh-plugin-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Anthropic Model Context Protocol (MCP) client bridge plugin for DeepSeek Harness (dsh).",
   "main": "dist/index.js",
@@ -19,8 +19,9 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "tsc",
     "prepack": "tsc",
-    "test": "node --test test/mcp.test.mjs"
+    "test": "node --experimental-strip-types --test test/mcp.test.mjs"
   },
   "keywords": [
     "deepseek",

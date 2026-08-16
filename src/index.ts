@@ -2,7 +2,7 @@ import { Context, Service, Schema } from 'cordis'
 import { MCPStdioClient, MCPServerConfig, MCPToolDefinition } from './client.js'
 
 export interface MCPPluginConfig {
-  /** Map of MCP server definitions: serverName -> { command, args, env } */
+  /** Map of MCP server definitions: serverName -> { command, args, env, requestTimeoutMs } */
   servers?: Record<string, MCPServerConfig>
 }
 
@@ -12,6 +12,7 @@ export const MCPPluginConfig: Schema<MCPPluginConfig> = Schema.object({
       command: Schema.string().required(),
       args: Schema.array(Schema.string()).default([]),
       env: Schema.dict(Schema.string()).default({}),
+      requestTimeoutMs: Schema.number().default(30000).description('Timeout in milliseconds for tool calls.'),
     })
   ).default({}),
 })
