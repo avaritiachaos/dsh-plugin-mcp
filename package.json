@@ -21,7 +21,8 @@
     "build": "tsc",
     "prepare": "tsc",
     "prepack": "tsc",
-    "test": "node --experimental-strip-types --test test/mcp.test.mjs"
+    "pretest": "tsc",
+    "test": "node --test"
   },
   "keywords": [
     "deepseek",
@@ -40,6 +41,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh": "*",

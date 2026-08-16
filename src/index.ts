@@ -24,16 +24,29 @@ declare module 'cordis' {
 }
 
 /**
+ * Percent-escape `_` and `%` so namespaced tool names can never collide:
+ * server `a_b` + tool `c` -> `mcp_a%5Fb_c`, server `a` + tool `b_c` ->
+ * `mcp_a_b%5Fc` — always distinct (M19).
+ */
+export function namespaceToolName(server: string, toolName: string): string {
+  const esc = (s: string): string => s.replace(/%/g, '%25').replace(/_/g, '%5F')
+  return `mcp_${esc(server)}_${esc(toolName)}`
+}
+
+/**
  * DeepSeek Harness Model Context Protocol (MCP) Service.
  * Connects external MCP servers and bridges them into DeepSeek agent tool space.
  */
 export class MCPService extends Service<MCPPluginConfig> {
+  /** Cordis validates plugin config against this schema. */
+  public static Config = MCPPluginConfig
+
   private clients = new Map<string, MCPStdioClient>()
   private registeredTools = new Map<string, { server: string; definition: MCPToolDefinition }>()
 
   constructor(ctx: Context, config: MCPPluginConfig = {}) {
     super(ctx, 'mcp', true)
-    this.config = config
+    this.config = MCPPluginConfig(config) as MCPPluginConfig
   }
 
   protected async start(): Promise<void> {
@@ -44,8 +57,11 @@ export class MCPService extends Service<MCPPluginConfig> {
         const { tools } = await client.connect()
         this.clients.set(name, client)
 
+        // Server exit/crash must not leave a stale client or stale tools behind (M18).
+        client.on('close', () => this.unregisterServer(name))
+
         for (const tool of tools) {
-          const namespacedName = `mcp_${name}_${tool.name}`
+          const namespacedName = namespaceToolName(name, tool.name)
           this.registeredTools.set(namespacedName, { server: name, definition: tool })
         }
 
@@ -54,6 +70,18 @@ export class MCPService extends Service<MCPPluginConfig> {
         this.ctx.logger.warn(`[dsh-plugin-mcp] Failed to connect MCP server '${name}': ${err}`)
       }
     }
+  }
+
+  /**
+   * Remove a server and all of its tools from the registry (idempotent).
+   */
+  private unregisterServer(name: string): void {
+    for (const [namespacedName, item] of this.registeredTools.entries()) {
+      if (item.server === name) {
+        this.registeredTools.delete(namespacedName)
+      }
+    }
+    this.clients.delete(name)
   }
 
   protected stop(): void {
@@ -96,5 +124,5 @@ export class MCPService extends Service<MCPPluginConfig> {
 export { MCPStdioClient, MCPServerConfig, MCPToolDefinition }
 
 export default function apply(ctx: Context, config: MCPPluginConfig = {}) {
-  ctx.plugin(MCPService, config)
+  ctx.plugin(MCPService, MCPPluginConfig(config))
 }
